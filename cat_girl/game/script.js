@@ -1,287 +1,330 @@
-const screens = {
-  start: document.getElementById('startScreen'),
-  game: document.getElementById('gameScreen'),
-  end: document.getElementById('endScreen')
-};
+const startScreen = document.getElementById("startScreen");
+const gameScreen = document.getElementById("gameScreen");
+const endScreen = document.getElementById("endScreen");
 
-const startBtn = document.getElementById('startBtn');
-const restartBtn = document.getElementById('restartBtn');
-const board = document.getElementById('board');
-const player = document.getElementById('player');
-let collectibleItems = [];
-const burst = document.getElementById('burst');
-const stageLabel = document.getElementById('stageLabel');
-const timeText = document.getElementById('timeText');
-const storyBubble = document.getElementById('storyBubble');
-const progressDots = Array.from(document.querySelectorAll('.progress-dot'));
-const endTitle = document.getElementById('endTitle');
-const endText = document.getElementById('endText');
-const endGirl = document.getElementById('endGirl');
+const startBtn = document.getElementById("startBtn");
+const againBtn = document.getElementById("againBtn");
+const continueBtn = document.getElementById("continueBtn");
 
-const stages = [
+const board = document.getElementById("board");
+const player = document.getElementById("player");
+const message = document.getElementById("message");
+const chapterText = document.getElementById("chapterText");
+const chapterName = document.getElementById("chapterName");
+const scoreText = document.getElementById("scoreText");
+const barFill = document.getElementById("barFill");
+const levelComplete = document.getElementById("levelComplete");
+const levelTitle = document.getElementById("levelTitle");
+const levelText = document.getElementById("levelText");
+
+const chapters = [
   {
-    item: 'assets/item-ears.png',
-    stageImage: 'assets/girl-1.png',
-    label: 'אוזני חתול',
-    instruction: 'אספי קודם את אוזני החתול',
-    success: 'יופי. צמחו לה אוזני חתול'
+    title: "פרק 1: אוזני חתול",
+    instruction: "אספי את כל אוזני החתול",
+    item: "assets/item-ears.png",
+    playerImage: "assets/girl-1.png",
+    count: 5,
+    doneTitle: "צמחו לה אוזני חתול",
+    doneText: "עכשיו היא שומעת את רחשי הקסם מסביב לבריכה."
   },
   {
-    item: 'assets/item-whiskers.png',
-    stageImage: 'assets/girl-2.png',
-    label: 'אף ושפם',
-    instruction: 'עכשיו אספי את האף והשפם',
-    success: 'מקסים. עכשיו יש לה אף ושפם חתוליים'
+    title: "פרק 2: אף ושפם",
+    instruction: "אספי את כל קסמי האף והשפם",
+    item: "assets/item-whiskers.png",
+    playerImage: "assets/girl-2.png",
+    count: 6,
+    doneTitle: "יש לה אף ושפם חתוליים",
+    doneText: "היא מרגישה את הרוח, את הפרחים ואת ריח המים הקסומים."
   },
   {
-    item: 'assets/item-tail.png',
-    stageImage: 'assets/girl-3.png',
-    label: 'זנב פלאי',
-    instruction: 'עוד שלב אחד: אספי את הזנב הקסום',
-    success: 'איזה יופי. צמח לה זנב פלאי'
+    title: "פרק 3: זנב פלאי",
+    instruction: "אספי את כל קסמי הזנב",
+    item: "assets/item-tail.png",
+    playerImage: "assets/girl-3.png",
+    count: 7,
+    doneTitle: "צמח לה זנב פלאי",
+    doneText: "הזנב עוזר לה לשמור על שיווי משקל ולרקוד ליד הבריכה."
   },
   {
-    item: 'assets/item-heart.png',
-    stageImage: 'assets/girl-4.png',
-    label: 'חצי חתולה',
-    instruction: 'לבסוף, אספי את הלב החתולי',
-    success: 'הקסם הושלם'
+    title: "פרק 4: לב חתולי",
+    instruction: "אספי את כל הלבבות החתוליים",
+    item: "assets/item-heart.png",
+    playerImage: "assets/girl-4.png",
+    count: 8,
+    doneTitle: "הקסם הושלם",
+    doneText: "היא כבר חצי ילדה וחצי חתולה, בדיוק כמו בסיפור."
   }
 ];
 
-let currentStage = 0;
-let timeLeft = 90;
+let chapterIndex = 0;
+let collectedInChapter = 0;
 let playerX = 50;
 let playerY = 72;
-let running = false;
-let dragActive = false;
+let isRunning = false;
+let isPaused = false;
 let animationFrame = null;
-let timer = null;
 let activeKeys = new Set();
-let messageTimeout = null;
+let collectibles = [];
+let dragActive = false;
+let messageTimer = null;
 
-function showScreen(name) {
-  Object.entries(screens).forEach(([key, el]) => {
-    el.classList.toggle('is-active', key === name);
+const basePositions = [
+  { x: 16, y: 24 }, { x: 42, y: 22 }, { x: 70, y: 26 }, { x: 84, y: 44 },
+  { x: 64, y: 58 }, { x: 34, y: 62 }, { x: 18, y: 76 }, { x: 78, y: 78 }
+];
+
+function showScreen(screen) {
+  [startScreen, gameScreen, endScreen].forEach((item) => {
+    item.classList.toggle("is-active", item === screen);
   });
 }
 
-function updatePlayerPosition() {
-  player.style.left = `${playerX}%`;
-  player.style.top = `${playerY}%`;
-}
+function setMessage(text, temporary = false) {
+  window.clearTimeout(messageTimer);
+  message.textContent = text;
 
-function setMessage(text, persistent = false) {
-  clearTimeout(messageTimeout);
-  storyBubble.textContent = text;
-  if (!persistent && running && currentStage < stages.length) {
-    messageTimeout = setTimeout(() => {
-      storyBubble.textContent = stages[currentStage].instruction;
+  if (temporary) {
+    messageTimer = window.setTimeout(() => {
+      if (isRunning && !isPaused) {
+        message.textContent = chapters[chapterIndex].instruction;
+      }
     }, 1200);
   }
 }
 
+function updatePlayer() {
+  player.style.left = `${playerX}%`;
+  player.style.top = `${playerY}%`;
+}
+
 function updateHud() {
-  timeText.textContent = timeLeft;
-  stageLabel.textContent = currentStage === 0 ? 'ילדה רגילה' : stages[currentStage - 1].label;
-  progressDots.forEach((dot, index) => {
-    dot.classList.toggle('is-active', index === currentStage);
-    dot.classList.toggle('is-done', index < currentStage);
-  });
+  const chapter = chapters[chapterIndex];
+  chapterText.textContent = `${chapterIndex + 1} / ${chapters.length}`;
+  chapterName.textContent = chapter.title;
+  scoreText.textContent = `${collectedInChapter} / ${chapter.count}`;
+  barFill.style.width = `${Math.round((collectedInChapter / chapter.count) * 100)}%`;
 }
 
-function placeCollectibles() {
-  board.querySelectorAll('.collectible').forEach((item) => item.remove());
+function createCollectibles() {
+  collectibles.forEach((item) => item.remove());
+  collectibles = [];
 
-  const positions = [
-    { x: 18, y: 28 },
-    { x: 78, y: 30 },
-    { x: 22, y: 70 },
-    { x: 76, y: 68 }
-  ];
+  const chapter = chapters[chapterIndex];
+  const positions = basePositions.slice(0, chapter.count);
 
-  collectibleItems = stages.map((stage, index) => {
-    const item = document.createElement('img');
-
-    item.className = 'collectible';
-    item.src = stage.item;
-    item.alt = stage.label;
-    item.dataset.index = index;
-
-    item.style.left = `${positions[index].x}%`;
-    item.style.top = `${positions[index].y}%`;
-
+  positions.forEach((position, index) => {
+    const item = document.createElement("img");
+    item.className = "collectible";
+    item.src = chapter.item;
+    item.alt = "קסם לאיסוף";
+    item.dataset.index = String(index);
+    item.style.left = `${position.x}%`;
+    item.style.top = `${position.y}%`;
+    item.style.animationDelay = `${(index % 4) * 120}ms`;
     board.appendChild(item);
-    return item;
+    collectibles.push(item);
   });
 }
 
-function resetGame() {
-  currentStage = 0;
-  timeLeft = 90;
+function startChapter(index) {
+  chapterIndex = index;
+  collectedInChapter = 0;
+  isPaused = false;
+  levelComplete.classList.remove("is-visible");
+
+  player.src = index === 0 ? "assets/girl-0.png" : chapters[index - 1].playerImage;
   playerX = 50;
   playerY = 72;
-  activeKeys.clear();
-  player.src = 'assets/girl-0.png';
-  endGirl.src = 'assets/girl-4.png';
-  updatePlayerPosition();
+
+  updatePlayer();
   updateHud();
-  placeCollectibles();
-  setMessage('אספי את כל הקסמים כדי להפוך לחצי חתולה', true);
+  createCollectibles();
+  setMessage(chapters[index].instruction, false);
 }
 
 function startGame() {
-  resetGame();
-  running = true;
-  showScreen('game');
-  timer = setInterval(() => {
-    timeLeft -= 1;
-    updateHud();
-    if (timeLeft <= 0) {
-      finishGame(false);
-    }
-  }, 1000);
+  showScreen(gameScreen);
+  isRunning = true;
+  activeKeys.clear();
+  startChapter(0);
+  cancelAnimationFrame(animationFrame);
   animationFrame = requestAnimationFrame(loop);
 }
 
-function stopGame() {
-  running = false;
-  clearInterval(timer);
+function finishGame() {
+  isRunning = false;
+  isPaused = false;
   cancelAnimationFrame(animationFrame);
+  showScreen(endScreen);
 }
 
-function finishGame(won) {
-  stopGame();
-  if (won) {
-    endTitle.textContent = 'היא הפכה לחצי חתולה';
-    endText.textContent = 'עזרת לה להשלים את כל הקסמים. עכשיו היא יכולה לספר בגאווה שאבא שלה היה חתול ואמא שלה בת אדם.';
-    endGirl.src = 'assets/girl-4.png';
-    showScreen('end');
-  } else {
-    endTitle.textContent = 'כמעט הצלחת';
-    endText.textContent = 'הזמן נגמר לפני שכל הקסמים נאספו. נסי שוב ותעזרי לה להפוך לחצי חתולה.';
-    endGirl.src = currentStage >= 3 ? 'assets/girl-3.png' : currentStage === 2 ? 'assets/girl-2.png' : currentStage === 1 ? 'assets/girl-1.png' : 'assets/girl-0.png';
-    showScreen('end');
+function completeChapter() {
+  const chapter = chapters[chapterIndex];
+  isPaused = true;
+  player.src = chapter.playerImage;
+  player.classList.add("is-changing");
+
+  setTimeout(() => {
+    player.classList.remove("is-changing");
+  }, 460);
+
+  levelTitle.textContent = chapter.doneTitle;
+  levelText.textContent = chapter.doneText;
+  levelComplete.classList.add("is-visible");
+}
+
+function continueGame() {
+  levelComplete.classList.remove("is-visible");
+
+  if (chapterIndex >= chapters.length - 1) {
+    finishGame();
+    return;
   }
+
+  startChapter(chapterIndex + 1);
 }
 
 function rectsTouch(a, b) {
   const ar = a.getBoundingClientRect();
   const br = b.getBoundingClientRect();
-  return !(ar.right < br.left || ar.left > br.right || ar.bottom < br.top || ar.top > br.bottom);
-}
 
-function triggerBurst(item) {
-  const itemRect = item.getBoundingClientRect();
-  const boardRect = board.getBoundingClientRect();
+  const shrinkA = ar.width * 0.18;
+  const shrinkB = br.width * 0.18;
 
-  burst.style.left = `${itemRect.left - boardRect.left + itemRect.width / 2}px`;
-  burst.style.top = `${itemRect.top - boardRect.top + itemRect.height / 2}px`;
-
-  burst.classList.remove('is-active');
-  void burst.offsetWidth;
-  burst.classList.add('is-active');
+  return !(
+    ar.right - shrinkA < br.left + shrinkB ||
+    ar.left + shrinkA > br.right - shrinkB ||
+    ar.bottom - shrinkA < br.top + shrinkB ||
+    ar.top + shrinkA > br.bottom - shrinkB
+  );
 }
 
 function collect(item) {
-  if (!item || item.classList.contains('collected')) {
+  if (isPaused || item.classList.contains("collected")) {
     return;
   }
 
-  item.classList.add('collected');
-  triggerBurst(item);
-
-  currentStage += 1;
-
-  const nextImageIndex = Math.min(currentStage, stages.length);
-  player.src = `assets/girl-${nextImageIndex}.png`;
-
+  item.classList.add("collected");
+  collectedInChapter += 1;
   updateHud();
+  setMessage(`נאסף ${collectedInChapter} מתוך ${chapters[chapterIndex].count}`, true);
 
-  if (currentStage < stages.length) {
-    setMessage(`נאסף קסם ${currentStage} מתוך ${stages.length}`);
-  }
+  window.setTimeout(() => {
+    item.remove();
+  }, 330);
 
-  if (currentStage >= stages.length) {
-    setMessage('הקסם הושלם. היא הפכה לחצי חתולה');
-    setTimeout(() => finishGame(true), 850);
+  if (collectedInChapter >= chapters[chapterIndex].count) {
+    window.setTimeout(completeChapter, 420);
   }
 }
 
 function movePlayer(dx, dy) {
-  playerX = Math.max(10, Math.min(90, playerX + dx));
-  playerY = Math.max(22, Math.min(84, playerY + dy));
-  updatePlayerPosition();
+  playerX = Math.max(9, Math.min(91, playerX + dx));
+  playerY = Math.max(24, Math.min(84, playerY + dy));
+  updatePlayer();
 }
 
 function loop() {
-  if (!running) return;
-
-  const speed = window.innerWidth < 640 ? 1.55 : 1.2;
-
-  if (activeKeys.has('ArrowLeft') || activeKeys.has('left')) movePlayer(-speed, 0);
-  if (activeKeys.has('ArrowRight') || activeKeys.has('right')) movePlayer(speed, 0);
-  if (activeKeys.has('ArrowUp') || activeKeys.has('up')) movePlayer(0, -speed);
-  if (activeKeys.has('ArrowDown') || activeKeys.has('down')) movePlayer(0, speed);
-
-  collectibleItems.forEach((item) => {
-  if (!item.classList.contains('collected') && rectsTouch(player, item)) {
-    collect(item);
+  if (!isRunning) {
+    return;
   }
-});
+
+  if (!isPaused) {
+    const speed = window.innerWidth < 640 ? 1.55 : 1.22;
+
+    if (activeKeys.has("ArrowLeft") || activeKeys.has("left")) {
+      movePlayer(-speed, 0);
+    }
+
+    if (activeKeys.has("ArrowRight") || activeKeys.has("right")) {
+      movePlayer(speed, 0);
+    }
+
+    if (activeKeys.has("ArrowUp") || activeKeys.has("up")) {
+      movePlayer(0, -speed);
+    }
+
+    if (activeKeys.has("ArrowDown") || activeKeys.has("down")) {
+      movePlayer(0, speed);
+    }
+
+    collectibles.forEach((item) => {
+      if (item.isConnected && !item.classList.contains("collected") && rectsTouch(player, item)) {
+        collect(item);
+      }
+    });
+  }
 
   animationFrame = requestAnimationFrame(loop);
 }
 
-document.addEventListener('keydown', (event) => {
-  if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
+document.addEventListener("keydown", (event) => {
+  if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) {
     event.preventDefault();
     activeKeys.add(event.key);
   }
 });
 
-document.addEventListener('keyup', (event) => {
+document.addEventListener("keyup", (event) => {
   activeKeys.delete(event.key);
 });
 
-document.querySelectorAll('.mobile-controls button').forEach((button) => {
-  const dir = button.dataset.dir;
-  button.addEventListener('pointerdown', () => activeKeys.add(dir));
-  button.addEventListener('pointerup', () => activeKeys.delete(dir));
-  button.addEventListener('pointerleave', () => activeKeys.delete(dir));
-  button.addEventListener('pointercancel', () => activeKeys.delete(dir));
+document.querySelectorAll(".move-controls button").forEach((button) => {
+  const direction = button.dataset.dir;
+
+  button.addEventListener("pointerdown", () => {
+    activeKeys.add(direction);
+  });
+
+  button.addEventListener("pointerup", () => {
+    activeKeys.delete(direction);
+  });
+
+  button.addEventListener("pointerleave", () => {
+    activeKeys.delete(direction);
+  });
+
+  button.addEventListener("pointercancel", () => {
+    activeKeys.delete(direction);
+  });
 });
 
-board.addEventListener('pointerdown', (event) => {
-  if (!running) return;
+board.addEventListener("pointerdown", (event) => {
+  if (!isRunning || isPaused) {
+    return;
+  }
+
   dragActive = true;
   board.setPointerCapture(event.pointerId);
 });
 
-board.addEventListener('pointermove', (event) => {
-  if (!running || !dragActive) return;
+board.addEventListener("pointermove", (event) => {
+  if (!isRunning || isPaused || !dragActive) {
+    return;
+  }
+
   const rect = board.getBoundingClientRect();
   playerX = ((event.clientX - rect.left) / rect.width) * 100;
   playerY = ((event.clientY - rect.top) / rect.height) * 100;
-  playerX = Math.max(10, Math.min(90, playerX));
-  playerY = Math.max(22, Math.min(84, playerY));
-  updatePlayerPosition();
+  playerX = Math.max(9, Math.min(91, playerX));
+  playerY = Math.max(24, Math.min(84, playerY));
+  updatePlayer();
 });
 
-board.addEventListener('pointerup', (event) => {
+board.addEventListener("pointerup", (event) => {
   dragActive = false;
+
   if (board.hasPointerCapture(event.pointerId)) {
     board.releasePointerCapture(event.pointerId);
   }
 });
 
-board.addEventListener('pointercancel', () => {
+board.addEventListener("pointercancel", () => {
   dragActive = false;
 });
 
-startBtn.addEventListener('click', startGame);
-restartBtn.addEventListener('click', startGame);
+startBtn.addEventListener("click", startGame);
+againBtn.addEventListener("click", startGame);
+continueBtn.addEventListener("click", continueGame);
 
-updatePlayerPosition();
-updateHud();
-placeCollectibles();
+updatePlayer();

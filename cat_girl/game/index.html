@@ -3,109 +3,114 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>הילדה שהופכת לחצי חתולה</title>
+  <title>מסע הקסמים של ילדה חצי חתולה</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="app">
     <section class="screen start-screen is-active" id="startScreen">
-      <div class="panel hero-panel">
-        <div class="hero-art">
-          <img src="assets/background.png" alt="עולם קסום" class="hero-bg" />
-          <img src="assets/girl-0.png" alt="הילדה" class="hero-girl hero-girl-left" />
-          <img src="assets/girl-4.png" alt="הילדה החצי חתולה" class="hero-girl hero-girl-right" />
+      <div class="layout-card start-card">
+        <div class="art-card">
+          <img src="assets/background.png" alt="בריכה קסומה" class="art-bg" />
+          <img src="assets/girl-0.png" alt="הילדה לפני הקסם" class="start-girl girl-human" />
+          <img src="assets/girl-4.png" alt="הילדה אחרי הקסם" class="start-girl girl-cat" />
         </div>
 
-        <div class="hero-copy">
-          <p class="eyebrow">משחק רספונסיבי ל-GitHub Pages</p>
-          <h1>הילדה שהופכת לחצי חתולה</h1>
+        <div class="copy-card">
+          <p class="eyebrow">משחק ארוך יותר</p>
+          <h1>מסע הקסמים של ילדה חצי חתולה</h1>
           <p class="lead">
-            עזרי לילדה לאסוף קסמים בגן הקסום. בכל שלב היא משתנה עוד קצת,
-            עד שהיא הופכת לחצי ילדה וחצי חתולה.
+            בכל פרק אוספים את כל הקסמים שמופיעים על המסך.
+            אחרי כל פרק הילדה משתנה עוד קצת, עד שהיא הופכת לחצי ילדה וחצי חתולה.
           </p>
 
-          <div class="steps-preview">
-            <div class="preview-step"><img src="assets/item-ears.png" alt="אוזניים" /><span>אוזני חתול</span></div>
-            <div class="preview-step"><img src="assets/item-whiskers.png" alt="שפם" /><span>אף ושפם</span></div>
-            <div class="preview-step"><img src="assets/item-tail.png" alt="זנב" /><span>זנב פלאי</span></div>
-            <div class="preview-step"><img src="assets/item-heart.png" alt="לב קסום" /><span>לב חתולי</span></div>
+          <div class="chapter-list">
+            <div><img src="assets/item-ears.png" alt="" /><span>פרק 1: אוזניים</span></div>
+            <div><img src="assets/item-whiskers.png" alt="" /><span>פרק 2: שפם</span></div>
+            <div><img src="assets/item-tail.png" alt="" /><span>פרק 3: זנב</span></div>
+            <div><img src="assets/item-heart.png" alt="" /><span>פרק 4: לב חתולי</span></div>
           </div>
 
-          <div class="rules-list">
-            <span>מחשב: חיצים במקלדת</span>
-            <span>מובייל: גרירה או כפתורי תנועה</span>
-            <span>המשימה: לאסוף את כל הקסמים בזמן</span>
+          <div class="rules">
+            <span>במחשב: חצים במקלדת</span>
+            <span>בפלאפון/טאבלט: גרירה או כפתורי תנועה</span>
+            <span>אין נפילות ואין עונשים, רק איסוף קסמים</span>
           </div>
 
-          <button id="startBtn" class="primary-btn" type="button">התחילי לשחק</button>
+          <button type="button" id="startBtn" class="primary-btn">התחלת משחק</button>
         </div>
       </div>
     </section>
 
     <section class="screen game-screen" id="gameScreen">
-      <header class="hud">
-        <div class="hud-card">
-          <span class="hud-label">שלב</span>
-          <strong id="stageLabel">ילדה רגילה</strong>
+      <header class="topbar">
+        <div class="stat">
+          <span>פרק</span>
+          <strong id="chapterText">1 / 4</strong>
         </div>
-        <div class="hud-card progress-card">
-          <span class="hud-label">התקדמות</span>
-          <div class="progress-track" id="progressTrack">
-            <span class="progress-dot is-active"></span>
-            <span class="progress-dot"></span>
-            <span class="progress-dot"></span>
-            <span class="progress-dot"></span>
-            <span class="progress-dot"></span>
+
+        <div class="stat wide">
+          <span id="chapterName">אוספים אוזניים</span>
+          <div class="bar">
+            <div class="bar-fill" id="barFill"></div>
           </div>
         </div>
-        <div class="hud-card">
-          <span class="hud-label">זמן</span>
-          <strong id="timeText">90</strong>
+
+        <div class="stat">
+          <span>נאסף</span>
+          <strong id="scoreText">0 / 5</strong>
         </div>
       </header>
 
-      <section class="board-wrap">
+      <section class="game-panel">
         <div class="board" id="board" aria-label="אזור המשחק">
-          <img src="assets/background.png" alt="רקע" class="board-bg" />
-          <div class="board-overlay"></div>
-          <div class="floating-sparkle s1"></div>
-          <div class="floating-sparkle s2"></div>
-          <div class="floating-sparkle s3"></div>
-          <div class="floating-sparkle s4"></div>
+          <img src="assets/background.png" alt="" class="board-bg" />
+          <div class="board-shade"></div>
 
-          <div class="story-bubble" id="storyBubble">אספי קודם את אוזני החתול</div>
+          <div class="message" id="message">אספי את כל אוזני החתול</div>
 
-          <img id="collectible" class="collectible" src="assets/item-ears.png" alt="פריט קסם" />
+          <div class="sparkle sparkle-one"></div>
+          <div class="sparkle sparkle-two"></div>
+          <div class="sparkle sparkle-three"></div>
+          <div class="sparkle sparkle-four"></div>
+
           <img id="player" class="player" src="assets/girl-0.png" alt="הילדה" />
-          <div id="burst" class="burst"></div>
-        </div>
-      </section>
 
-      <nav class="mobile-controls" aria-label="כפתורי תנועה">
-        <button type="button" data-dir="up">למעלה</button>
-        <div class="mobile-row">
-          <button type="button" data-dir="right">ימינה</button>
-          <button type="button" data-dir="left">שמאלה</button>
+          <div class="level-complete" id="levelComplete">
+            <div>
+              <h2 id="levelTitle">יופי</h2>
+              <p id="levelText">הילדה השתנתה עוד קצת.</p>
+              <button type="button" id="continueBtn" class="primary-btn small">המשך</button>
+            </div>
+          </div>
         </div>
-        <button type="button" data-dir="down">למטה</button>
-      </nav>
+
+        <nav class="move-controls" aria-label="כפתורי תנועה">
+          <button type="button" data-dir="up">למעלה</button>
+          <div class="move-row">
+            <button type="button" data-dir="right">ימינה</button>
+            <button type="button" data-dir="left">שמאלה</button>
+          </div>
+          <button type="button" data-dir="down">למטה</button>
+        </nav>
+      </section>
     </section>
 
     <section class="screen end-screen" id="endScreen">
-      <div class="panel end-panel">
-        <div class="end-art">
-          <img src="assets/background.png" alt="רקע קסום" class="end-bg" />
-          <img id="endGirl" src="assets/girl-4.png" alt="הילדה החצי חתולה" class="end-girl" />
+      <div class="layout-card end-card">
+        <div class="art-card">
+          <img src="assets/background.png" alt="בריכה קסומה" class="art-bg" />
+          <img src="assets/girl-4.png" alt="הילדה חצי חתולה" class="end-girl" />
         </div>
 
-        <div class="end-copy">
-          <p class="eyebrow">כל הכבוד</p>
-          <h2 id="endTitle">היא הפכה לחצי חתולה</h2>
-          <p id="endText" class="lead small">
-            עכשיו היא יכולה להגיד לכולם בחיוך:
-            אבא שלה היה חתול ואמא שלה בת אדם.
+        <div class="copy-card">
+          <p class="eyebrow">הקסם הושלם</p>
+          <h2>היא הפכה לחצי ילדה וחצי חתולה</h2>
+          <p class="lead">
+            עכשיו היא יכולה להסביר לילדים בחיוך:
+            אבא שלה היה חתול, ואמא שלה בת אדם.
           </p>
-          <button id="restartBtn" class="primary-btn" type="button">לשחק שוב</button>
+          <button type="button" id="againBtn" class="primary-btn">לשחק שוב</button>
         </div>
       </div>
     </section>
