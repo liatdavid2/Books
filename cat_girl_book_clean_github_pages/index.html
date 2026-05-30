@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ילדה חצי חתולה</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <section class="book-shell" aria-label="ילדה חצי חתולה">
+      <div class="book" id="book">
+        <article class="page is-active">
+          <img src="assets/cover.png" alt="שער הספר ילדה חצי חתולה" />
+        </article>
+
+        <article class="page">
+          <img src="assets/page-1.png" alt="דף 1 ילדה חצי חתולה הלכה לבריכה" />
+        </article>
+
+        <article class="page">
+          <img src="assets/page-2.png" alt="דף 2 שאלו למה היא נולדה ככה חצי חתולה" />
+        </article>
+      </div>
+
+      <nav class="controls" aria-label="דפדוף בספר">
+        <button type="button" id="nextBtn" aria-label="לעמוד הבא">הבא</button>
+        <div class="dots" id="dots" aria-label="בחירת עמוד"></div>
+        <button type="button" id="prevBtn" aria-label="לעמוד הקודם">הקודם</button>
+      </nav>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
