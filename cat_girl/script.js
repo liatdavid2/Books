@@ -2,6 +2,7 @@ const pages = Array.from(document.querySelectorAll(".page"));
 const prevBtn = document.getElementById("prevBtn");
 const nextBtn = document.getElementById("nextBtn");
 const dotsRoot = document.getElementById("dots");
+const pageCounter = document.getElementById("pageCounter");
 
 let currentPage = 0;
 
